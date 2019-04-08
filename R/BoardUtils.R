@@ -1,6 +1,3 @@
-library(tidyverse)
-library(magrittr)
-
 # Functions for manuipulation of the board
 WHITE <- 0
 RED <- 1
