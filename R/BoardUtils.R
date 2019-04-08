@@ -49,3 +49,82 @@ validate <- function(board) {
   return (all(pull(numByColour, sum) == 15))
 }
 
+getValue <- function(board, thisPoint, number) {
+
+  return (
+    board %>%
+      filter(point == thisPoint) %>%
+      mutate(indicator = case_when(
+        colour == RED & numCheckers >= number ~ " x",
+        colour == WHITE & numCheckers >= number ~ " o",
+        TRUE ~ "  "
+      )) %>%
+      pull(indicator)
+  )
+}
+
+pad <- function(number) {
+
+  padOne <- function(x) {
+    if (x < 10)
+      return (paste(" ", x, sep = ""))
+    else {
+      return (as.character(x))
+    }
+  }
+
+  return (sapply(number, padOne))
+}
+
+printBoard <- function(board) {
+
+  leftSide <- paste(13:18, collapse = " ")
+  rightSide <- paste(19:24, collapse = " ")
+
+  boardString <- paste("", leftSide, "|", rightSide, "\n")
+
+  # Top
+  for (row in 1:5) {
+    for (point in 13:18) {
+      boardString <- paste(boardString, getValue(board, point, row))
+    }
+
+    boardString <- paste(boardString, "|")
+
+    for (point in 19:24) {
+      boardString <- paste(boardString, getValue(board, point, row))
+    }
+
+    boardString <- paste(boardString, "\n", sep = "")
+  }
+
+
+  # Middle
+  boardString <- paste(boardString, "\n", sep = "")
+  boardString <- paste(boardString, "\n", sep = "")
+
+
+  for (row in 5:1) {
+
+    for (point in 12:7) {
+      boardString <- paste(boardString, getValue(board, point, row))
+    }
+
+    boardString <- paste(boardString, "|")
+
+    for (point in 6:1) {
+      boardString <- paste(boardString, getValue(board, point, row))
+    }
+
+    boardString <- paste(boardString, "\n", sep = "")
+  }
+
+  leftSide <- paste(pad(12:7), collapse = " ")
+  rightSide <- paste(pad(6:1), collapse = " ")
+
+  bottomString <- paste("", leftSide, "|", rightSide, "\n")
+
+  boardString <- paste(boardString, bottomString, sep = "")
+
+  return (boardString)
+}

@@ -56,7 +56,7 @@ test_that("valid moves from bar", {
     )
 
   # From bar to point 24
-  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 1, fromBar = TRUE, point = 0)
+  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 1, fromBar = TRUE, thisPoint = 0)
   newPoint <- filter(newBoard, point == 24)
 
   expect_equal(newPoint$numCheckers, 2)
@@ -65,7 +65,7 @@ test_that("valid moves from bar", {
 
 
   # From bar to point 23
-  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 2, fromBar = TRUE, point = 0)
+  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 2, fromBar = TRUE, thisPoint = 0)
   newPoint <- filter(newBoard, point == 24)
 
   expect_equal(newPoint$numCheckers, 1)
@@ -77,7 +77,7 @@ test_that("valid moves from bar", {
   expect_equal(newPoint$colour, RED)
 
   # Invalid move!
-  expect_error(newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 6, fromBar = TRUE, point = 0))
+  expect_error(newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 6, fromBar = TRUE, thisPoint = 0))
 
   # With blots
   initialBoard <- initialBoard %>%
@@ -85,11 +85,10 @@ test_that("valid moves from bar", {
     mutate(numCheckers = if_else(point == 20, 1, numCheckers)) %>%
     mutate(colour = if_else(point == 20, WHITE, colour))
 
-
+  # From bar to point 20
   browser()
 
-  # From bar to point 20
-  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 5, fromBar = TRUE, point = 0)
+  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 5, fromBar = TRUE, thisPoint = 0)
   newPoint <- filter(newBoard, point == 24)
 
   # Red hits blot on 20
@@ -103,3 +102,46 @@ test_that("valid moves from bar", {
   expect_equal(newPoint$bar, 1)
 
 })
+
+
+
+test_that("valid moves from board", {
+
+  initialBoard <- getStartingBoard()
+
+  # Lovers leap for red - (6-5 opening)
+  newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 6, thisPoint = 24)
+  newBoard <- doMove(board = newBoard, thisColour = RED, roll = 5, thisPoint = 18)
+
+  newPoint <- filter(newBoard, point == 24)
+  expect_equal(newPoint$numCheckers, 1)
+  expect_equal(newPoint$colour, RED)
+  expect_equal(newPoint$bar, 0)
+
+  newPoint <- filter(newBoard, point == 13)
+  expect_equal(newPoint$numCheckers, 6)
+  expect_equal(newPoint$colour, RED)
+
+
+  # White not so lucky - (5-1) split
+  newBoard <- doMove(board = newBoard, thisColour = WHITE, roll = 5, thisPoint = 12)
+  newBoard <- doMove(board = newBoard, thisColour = WHITE, roll = 1, thisPoint = 1)
+
+
+  newPoint <- filter(newBoard, point == 17)
+  expect_equal(newPoint$numCheckers, 4)
+  expect_equal(newPoint$colour, WHITE)
+  expect_equal(newPoint$bar, 0)
+
+  newPoint <- filter(newBoard, point == 1)
+  expect_equal(newPoint$numCheckers, 1)
+  expect_equal(newPoint$colour, WHITE)
+
+  newPoint <- filter(newBoard, point == 2)
+  expect_equal(newPoint$numCheckers, 1)
+  expect_equal(newPoint$colour, WHITE)
+
+
+
+})
+
