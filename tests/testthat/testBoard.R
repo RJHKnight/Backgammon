@@ -101,6 +101,7 @@ test_that("valid moves from bar", {
   expect_equal(newPoint$colour, WHITE)
   expect_equal(newPoint$bar, 1)
 
+
 })
 
 
