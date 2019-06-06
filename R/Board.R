@@ -14,9 +14,8 @@ getAvailableMoves <- function(board, roll, isWhite) {
     filter(colour == thisColour)
 
   onBar <- myBoard %>%
-    summarise(bar = max(bar)) %>%
-    mutate(anyBar = bar > 0) %>%
-    pull(anybar)
+    filter(point == getBarPoint(thisColour)) %>%
+    pull(numCheckers)
 
   if (anyBar) {
 
@@ -61,7 +60,7 @@ doMove <- function(board, thisColour, thisPoint, roll, fromBar = FALSE) {
         TRUE ~ numCheckers
       )) %>%
       mutate(colour = if_else(point == newPoint, thisColour, colour)) %>%
-      mutate(bar = if_else(colour == thisColour, bar-1, bar))
+      mutate(numCheckers = if_else(point == getBarPoint(thisColour), numCheckers-1, numCheckers))
 
   }
   else {
@@ -99,10 +98,8 @@ resolveHits <- function(board) {
   colourToResolve <- getOtherColour(toResolve$colour[1])
 
   newBoard <- board %>%
-    mutate(
-      numCheckers = if_else(point == pointToResolve, 1, numCheckers),
-    ) %>%
-    mutate(bar = if_else(colour == colourToResolve, bar + 1, bar))
+    mutate(numCheckers = if_else(point == pointToResolve, 1, numCheckers)) %>%
+    mutate(numCheckers = if_else(point == getBarPoint(colourToResolve), numCheckers + 1, numCheckers))
 
   boardOK <- validate(newBoard)
 

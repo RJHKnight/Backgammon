@@ -2,14 +2,15 @@
 WHITE <- 0
 RED <- 1
 
+WHITE_BAR = -1
+RED_BAR = -2
 
 getStartingBoard <- function() {
 
   board <- tibble(
-    point = 1:24,
-    numCheckers = c(2,0,0,0,0,5,0,3,0,0,0,5,5,0,0,0,3,0,5,0,0,0,0,2),
-    colour = c(WHITE,NA,NA,NA,NA,RED,NA,RED,NA,NA,NA,WHITE,RED,NA,NA,NA,WHITE,NA,WHITE,NA,NA,NA,NA,RED),
-    bar = 0
+    point = c(1:24,WHITE_BAR, RED_BAR),
+    numCheckers = c(2,0,0,0,0,5,0,3,0,0,0,5,5,0,0,0,3,0,5,0,0,0,0,2,0,0),
+    colour = c(WHITE,NA,NA,NA,NA,RED,NA,RED,NA,NA,NA,WHITE,RED,NA,NA,NA,WHITE,NA,WHITE,NA,NA,NA,NA,RED,WHITE,RED)
   )
 
   return (board)
@@ -17,6 +18,10 @@ getStartingBoard <- function() {
 
 isWhite <- function(colour) {
   return (colour == WHITE)
+}
+
+getBarPoint <- function(colour) {
+  return (ifelse(colour == WHITE, WHITE_BAR, RED_BAR))
 }
 
 getOtherColour <- function(colour) {
@@ -29,12 +34,10 @@ hasCheckerOnBar <- function(board, thisColour) {
 }
 
 getNumOnBar <- function(board, thisColour){
+
   return (board %>%
-            filter(colour == thisColour) %>%
-            group_by(colour) %>%
-            summarise(numOnBar = max(bar)) %>%
-            ungroup() %>%
-            pull(numOnBar)
+            filter(point == getBarPoint(thisColour)) %>%
+            pull(numCheckers)
   )
 }
 
@@ -43,7 +46,7 @@ validate <- function(board) {
   numByColour <- board %>%
     filter(!is.na(colour)) %>%
     group_by(colour) %>%
-    summarise(sum = sum(numCheckers) + min(bar)) %>%
+    summarise(sum = sum(numCheckers)) %>%
     ungroup()
 
   return (all(pull(numByColour, sum) == 15))

@@ -52,25 +52,27 @@ test_that("valid moves from bar", {
       numCheckers = if_else(point == 24, 1, numCheckers)
     ) %>%
     mutate(
-      bar = if_else(colour == RED, 1, 0)
+      numCheckers = if_else(point == RED_BAR, 1, numCheckers)
     )
 
   # From bar to point 24
   newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 1, fromBar = TRUE, thisPoint = 0)
   newPoint <- filter(newBoard, point == 24)
+  newBar <- filter(newBoard, point == RED_BAR)
 
   expect_equal(newPoint$numCheckers, 2)
   expect_equal(newPoint$colour, RED)
-  expect_equal(newPoint$bar, 0)
+  expect_equal(newBar$numCheckers, 0)
 
 
   # From bar to point 23
   newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 2, fromBar = TRUE, thisPoint = 0)
   newPoint <- filter(newBoard, point == 24)
+  newBar <- filter(newBoard, point == RED_BAR)
 
   expect_equal(newPoint$numCheckers, 1)
   expect_equal(newPoint$colour, RED)
-  expect_equal(newPoint$bar, 0)
+  expect_equal(newBar$numCheckers, 0)
 
   newPoint <- filter(newBoard, point == 24)
   expect_equal(newPoint$numCheckers, 1)
@@ -84,22 +86,26 @@ test_that("valid moves from bar", {
     mutate(numCheckers = if_else(point == 19, 4, numCheckers)) %>%
     mutate(numCheckers = if_else(point == 20, 1, numCheckers)) %>%
     mutate(colour = if_else(point == 20, WHITE, colour)) %>%
-    mutate(bar = if_else(colour == RED, 1, 0))
+    mutate(numCheckers = if_else(point == getBarPoint(RED), 1, numCheckers))
 
-  # From bar to point 20
+  printBoard(initialBoard)
+
   browser()
 
+  # From bar to point 20
   newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 5, fromBar = TRUE, thisPoint = 0)
 
   # Red hits blot on 20
+  newPoint <- filter(newBoard, point == 20)
+  whiteBar <- filter(newBoard, point == getBarPoint(WHITE))
+  redBar <- filter(newBoard, point == getBarPoint(RED))
+
   expect_equal(newPoint$numCheckers, 1)
   expect_equal(newPoint$colour, RED)
-  expect_equal(newPoint$bar, 0)
+  expect_equal(redBar$numCheckers, 0)
 
   # And white has a checker on the bar
-  newPoint <- filter(newBoard, point == 19)
-  expect_equal(newPoint$colour, WHITE)
-  expect_equal(newPoint$bar, 1)
+  expect_equal(whiteBar$numCheckers, 1)
 
 })
 
@@ -114,9 +120,11 @@ test_that("valid moves from board", {
   newBoard <- doMove(board = newBoard, thisColour = RED, roll = 5, thisPoint = 18)
 
   newPoint <- filter(newBoard, point == 24)
+  redBar <- filter(newBoard, point == getBarPoint(RED))
+
   expect_equal(newPoint$numCheckers, 1)
   expect_equal(newPoint$colour, RED)
-  expect_equal(newPoint$bar, 0)
+  expect_equal(redBar$numCheckers, 0)
 
   newPoint <- filter(newBoard, point == 13)
   expect_equal(newPoint$numCheckers, 6)
@@ -129,9 +137,10 @@ test_that("valid moves from board", {
 
 
   newPoint <- filter(newBoard, point == 17)
+  whiteBar <- filter(newBoard, point == getBarPoint(WHITE))
   expect_equal(newPoint$numCheckers, 4)
   expect_equal(newPoint$colour, WHITE)
-  expect_equal(newPoint$bar, 0)
+  expect_equal(whiteBar$numCheckers, 0)
 
   newPoint <- filter(newBoard, point == 1)
   expect_equal(newPoint$numCheckers, 1)
@@ -140,8 +149,6 @@ test_that("valid moves from board", {
   newPoint <- filter(newBoard, point == 2)
   expect_equal(newPoint$numCheckers, 1)
   expect_equal(newPoint$colour, WHITE)
-
-
 
 })
 

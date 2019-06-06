@@ -11,7 +11,7 @@ test_that("validate bar checks", {
       numCheckers = if_else(point == 24, 1, numCheckers)
     ) %>%
     mutate(
-      bar = if_else(colour == RED, 1, 0)
+      numCheckers = if_else(point == RED_BAR, 1, 0)
     )
 
   # With initial board, nothing on the bar
