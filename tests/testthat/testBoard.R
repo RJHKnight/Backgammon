@@ -83,13 +83,13 @@ test_that("valid moves from bar", {
   initialBoard <- initialBoard %>%
     mutate(numCheckers = if_else(point == 19, 4, numCheckers)) %>%
     mutate(numCheckers = if_else(point == 20, 1, numCheckers)) %>%
-    mutate(colour = if_else(point == 20, WHITE, colour))
+    mutate(colour = if_else(point == 20, WHITE, colour)) %>%
+    mutate(bar = if_else(colour == RED, 1, 0))
 
   # From bar to point 20
   browser()
 
   newBoard <- doMove(board = initialBoard, thisColour = RED, roll = 5, fromBar = TRUE, thisPoint = 0)
-  newPoint <- filter(newBoard, point == 24)
 
   # Red hits blot on 20
   expect_equal(newPoint$numCheckers, 1)
@@ -100,7 +100,6 @@ test_that("valid moves from bar", {
   newPoint <- filter(newBoard, point == 19)
   expect_equal(newPoint$colour, WHITE)
   expect_equal(newPoint$bar, 1)
-
 
 })
 

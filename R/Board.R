@@ -54,16 +54,14 @@ doMove <- function(board, thisColour, thisPoint, roll, fromBar = FALSE) {
     newPoint <- if_else(isWhite(thisColour), roll, 25-roll)
 
     newBoard <- board %>%
-      mutate(bar = if_else(colour == thisColour, bar-1, bar)) %>%
       mutate(numCheckers = case_when(
         point == newPoint & numCheckers == 0     ~ 1,                   # Nothing on the new point
         point == newPoint & colour == thisColour ~ numCheckers + 1,     # Adding to our colour
         point == newPoint & colour != thisColour ~ -1,                  # Hit
         TRUE ~ numCheckers
       )) %>%
-      mutate(
-        colour = if_else(point == newPoint, thisColour, colour)
-      )
+      mutate(colour = if_else(point == newPoint, thisColour, colour)) %>%
+      mutate(bar = if_else(colour == thisColour, bar-1, bar))
 
   }
   else {
@@ -81,7 +79,6 @@ doMove <- function(board, thisColour, thisPoint, roll, fromBar = FALSE) {
       mutate(
         colour = if_else(point == newPoint, thisColour, colour)
       )
-
   }
 
   newBoard <- resolveHits(newBoard)
@@ -104,8 +101,8 @@ resolveHits <- function(board) {
   newBoard <- board %>%
     mutate(
       numCheckers = if_else(point == pointToResolve, 1, numCheckers),
-      bar = if_else(colour == colourToResolve, bar + 1, bar)
-    )
+    ) %>%
+    mutate(bar = if_else(colour == colourToResolve, bar + 1, bar))
 
   boardOK <- validate(newBoard)
 
