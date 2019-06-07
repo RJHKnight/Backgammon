@@ -10,10 +10,7 @@ getAvailableMoves <- function(board, roll, isWhite) {
     # Doubles...
   }
 
-  myBoard <- board %>%
-    filter(colour == thisColour)
-
-  onBar <- myBoard %>%
+  onBar <- board %>%
     filter(point == getBarPoint(thisColour)) %>%
     pull(numCheckers)
 
@@ -23,21 +20,61 @@ getAvailableMoves <- function(board, roll, isWhite) {
 
   else {
 
-    myBoard %>%
-      group_by(point)
+    myPoints <- board %>%
+      filter(colour == thisColour & numCheckers > 0) %>%
+      pull(point)
 
+    # First moving a checker twice
+    sameChecker <- expand.grid(point1 = myPoints, roll1 = c(d1, d2), roll2 = c(d2, d1)) %>%
+      filter(!roll1 == roll2) %>%
+      mutate(point2 = if_else(rep(isWhite(thisColour), length(point1)), point1 + roll1, point1 - roll1))
 
+    # Then moving two different checkers
+    differentCheckers <-
+      expand.grid(point1 = myPoints, point2 = myPoints, roll1 = c(d1, d2), roll2 = c(d1, d2)) %>%
+      filter(!roll1 == roll2 & !point1 == point2)
+
+    allowedMoves <- rbind(sameChecker, differentCheckers) %>%
+      rowwise() %>%
+      mutate(allowed = checkOneRoll(board, thisColour, point1, point2, roll1, roll2)) %>%
+      filter(allowed)
+
+    return (allowedMoves)
   }
 
 }
 
-canMove <- function(board, thisColour, point, roll) {
+checkOneRoll <- function(board, thisColour, p1, p2, r1, r2) {
 
-  newPoint <- if_else(isWhite(thisColour), point + roll,point - roll)
+  m1 <- canMove(board, thisColour, p1, r1)
+
+  if (!m1)
+    return (FALSE)
+
+  b2 <- doMove(board, thisColour, p1, r1)
+
+  m2 <- canMove(b2, thisColour, p2, r2)
+
+  return (m2)
+}
+
+canMove <- function(board, thisColour, thisPoint, roll) {
+
+  newPoint <- if_else(isWhite(thisColour), thisPoint + roll,thisPoint - roll)
 
   # Boundary check
   if (newPoint > 24 | newPoint < 1)
     return (FALSE)
+
+  # Check that we are moving our piece!
+  ourPiece = board %>%
+    filter(point == thisPoint) %>%
+    mutate(ourPiece = colour == thisColour) %>%
+    pull(ourPiece)
+
+  if (!ourPiece) {
+    return (FALSE)
+  }
 
   return (board %>%
             filter(point == newPoint) %>%
