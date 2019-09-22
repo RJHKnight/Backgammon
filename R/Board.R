@@ -14,7 +14,7 @@ getAvailableMoves <- function(board, roll, isWhite) {
     filter(point == getBarPoint(thisColour)) %>%
     pull(numCheckers)
 
-  if (anyBar) {
+  if (onBar > 0) {
 
   }
 
@@ -34,7 +34,13 @@ getAvailableMoves <- function(board, roll, isWhite) {
       expand.grid(point1 = myPoints, point2 = myPoints, roll1 = c(d1, d2), roll2 = c(d1, d2)) %>%
       filter(!roll1 == roll2 & !point1 == point2)
 
-    allowedMoves <- rbind(sameChecker, differentCheckers) %>%
+    # Finally multiple moves from the same point
+    samePoint <-
+      expand.grid(point1 = myPoints, roll1 = c(d1, d2), roll2 = c(d2, d1)) %>%
+      filter(roll1 != roll2) %>%
+      mutate(point2 = point1)
+
+    allowedMoves <- rbind(sameChecker, differentCheckers, samePoint) %>%
       rowwise() %>%
       mutate(allowed = checkOneRoll(board, thisColour, point1, point2, roll1, roll2)) %>%
       filter(allowed)

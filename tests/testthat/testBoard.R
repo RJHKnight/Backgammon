@@ -42,7 +42,6 @@ test_that("valid can moves", {
 
 test_that("valid moves from bar", {
 
-
   initialBoard <- getStartingBoard()
 
   initialBoard <- initialBoard %>%
@@ -106,7 +105,6 @@ test_that("valid moves from bar", {
   expect_equal(whiteBar$numCheckers, 1)
 
 })
-
 
 
 test_that("valid moves from board", {

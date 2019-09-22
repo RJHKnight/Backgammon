@@ -1,5 +1,4 @@
 context("Basic test of the backgammon board utils")
-library(Backgammon)
 
 test_that("validate bar checks", {
 
