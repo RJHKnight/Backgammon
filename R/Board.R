@@ -66,7 +66,8 @@ handleMultipleOnBar <- function(board, thisColour, d1, d2) {
   # We can move if, and only if, both moves from the bar are valid
   if (canMoveFromBar(board, thisColour, d1) &
       canMoveFromBar(board, thisColour, d2)) {
-    this_bar = if_else(isWhite, WHITE_BAR, RED_BAR)
+
+    this_bar = if_else(isWhite(thisColour), WHITE_BAR, RED_BAR)
 
     return (
       data.frame(
