@@ -14,40 +14,128 @@ getAvailableMoves <- function(board, roll, isWhite) {
     filter(point == getBarPoint(thisColour)) %>%
     pull(numCheckers)
 
-  if (onBar > 0) {
+  if (onBar == 1) {
 
+    return (handleOneOnBar(board, thisColour, d1, d2))
+
+  }
+  else if (onBar > 1) {
+
+    return (handleMultipleOnBar(board, thisColour, d1, d2))
   }
 
   else {
 
-    myPoints <- board %>%
-      filter(colour == thisColour & numCheckers > 0) %>%
-      pull(point)
-
-    # First moving a checker twice
-    sameChecker <- expand.grid(point1 = myPoints, roll1 = c(d1, d2), roll2 = c(d2, d1)) %>%
-      filter(!roll1 == roll2) %>%
-      mutate(point2 = if_else(rep(isWhite(thisColour), length(point1)), point1 + roll1, point1 - roll1))
-
-    # Then moving two different checkers
-    differentCheckers <-
-      expand.grid(point1 = myPoints, point2 = myPoints, roll1 = c(d1, d2), roll2 = c(d1, d2)) %>%
-      filter(!roll1 == roll2 & !point1 == point2)
-
-    # Finally multiple moves from the same point
-    samePoint <-
-      expand.grid(point1 = myPoints, roll1 = c(d1, d2), roll2 = c(d2, d1)) %>%
-      filter(roll1 != roll2) %>%
-      mutate(point2 = point1)
-
-    allowedMoves <- rbind(sameChecker, differentCheckers, samePoint) %>%
-      rowwise() %>%
-      mutate(allowed = checkOneRoll(board, thisColour, point1, point2, roll1, roll2)) %>%
-      filter(allowed)
-
-    return (allowedMoves)
+    return (handleNormalMove(board, thisColour, d1, d2))
   }
 
+}
+
+handleNormalMove <- function(board, thisColour, d1, d2) {
+
+  myPoints <- board %>%
+    filter(colour == thisColour & numCheckers > 0) %>%
+    pull(point)
+
+  # First moving a checker twice
+  sameChecker <- expand.grid(point1 = myPoints, roll1 = c(d1, d2), roll2 = c(d2, d1)) %>%
+    filter(!roll1 == roll2) %>%
+    mutate(point2 = if_else(rep(isWhite(thisColour), length(point1)), point1 + roll1, point1 - roll1))
+
+  # Then moving two different checkers
+  differentCheckers <-
+    expand.grid(point1 = myPoints, point2 = myPoints, roll1 = c(d1, d2), roll2 = c(d1, d2)) %>%
+    filter(!roll1 == roll2 & !point1 == point2)
+
+  # Finally multiple moves from the same point
+  samePoint <-
+    expand.grid(point1 = myPoints, roll1 = c(d1, d2), roll2 = c(d2, d1)) %>%
+    filter(roll1 != roll2) %>%
+    mutate(point2 = point1)
+
+  allowedMoves <- rbind(sameChecker, differentCheckers, samePoint) %>%
+    rowwise() %>%
+    mutate(allowed = checkOneRoll(board, thisColour, point1, point2, roll1, roll2)) %>%
+    filter(allowed)
+
+  return (allowedMoves)
+}
+
+handleMultipleOnBar <- function(board, thisColour, d1, d2) {
+
+  # We can move if, and only if, both moves from the bar are valid
+  if (canMoveFromBar(board, thisColour, d1) &
+      canMoveFromBar(board, thisColour, d2)) {
+    this_bar = if_else(isWhite, WHITE_BAR, RED_BAR)
+
+    return (
+      data.frame(
+        point1 = this_bar,
+        roll1 = d1,
+        roll2 = d2,
+        point2 = this_bar
+      )
+    )
+  }
+  else {
+    return (NA)
+  }
+}
+
+handleOneOnBar <- function(board, thisColour, d1, d2) {
+
+  # Neither move valid
+  if (!(canMoveFromBar(board, thisColour, d1) | canMoveFromBar(board, thisColour, d2)))
+    return (NA)
+
+  moves <- NULL
+
+  this_bar = if_else(isWhite, WHITE_BAR, RED_BAR)
+
+  # d1 gets us off the bar, calc poss moves for d2
+  if (canMoveFromBar(board, thisColour, d1)) {
+
+    points <- board %>%
+      filter(colour == thisColour) %>%
+      rowwise() %>%
+      mutate(allowed = canMove(board, thisColour, point, d2)) %>%
+      filter(allowed) %>%
+      pull(point)
+
+    moves <- rbind(
+      moves,
+      data.frame(
+        point1 = this_bar,
+        roll1 = d1,
+        roll2 = d2,
+        point2 = points
+      )
+    )
+  }
+
+
+  # d2 gets us off the bar, calc poss moves for d2
+  if (canMoveFromBar(board, thisColour, d2)) {
+
+    points <- board %>%
+      filter(colour == thisColour) %>%
+      rowwise() %>%
+      mutate(allowed = canMove(board, thisColour, point, d1)) %>%
+      filter(allowed) %>%
+      pull(point)
+
+    moves <- rbind(
+      moves,
+      data.frame(
+        point1 = this_bar,
+        roll1 = d2,
+        roll2 = d1,
+        point2 = points
+      )
+    )
+  }
+
+  return (moves)
 }
 
 checkOneRoll <- function(board, thisColour, p1, p2, r1, r2) {
@@ -87,6 +175,31 @@ canMove <- function(board, thisColour, thisPoint, roll) {
             mutate(allowed = is.na(colour) | (colour == thisColour) | (numCheckers == 1)) %>%
             pull(allowed)
   )
+}
+
+canMoveFromBar <- function(board, thisColour, roll) {
+
+  this_bar <- if_else(isWhite(thisColour), WHITE_BAR, RED_BAR)
+  # Any points on the bar
+  onBar <- board %>%
+    filter(point == this_bar) %>%
+    pull(numCheckers)
+
+  if (onBar <= 0)
+    return (FALSE)
+
+  # Point we are trying to move to
+  target_point <- if_else(isWhite(thisColour), roll, 25-roll)
+
+  target <- board %>%
+    filter(point == target_point)
+
+  target_colour <- target$colour[1]
+  if (is.na(target_colour) | target_colour == thisColour)
+    return (TRUE)
+
+  return (FALSE)
+
 }
 
 doMove <- function(board, thisColour, thisPoint, roll, fromBar = FALSE) {

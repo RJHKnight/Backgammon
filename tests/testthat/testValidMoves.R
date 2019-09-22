@@ -1,4 +1,4 @@
-context("Tests of the calculation of valid states from various states.")
+context("Tests of the calculation of valid moves from various states.")
 
 test_that("valid moves from initial states - non double", {
   initial_board <- getStartingBoard()

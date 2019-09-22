@@ -17,6 +17,7 @@ test_that("boundary checks for board", {
   expect_equal(TRUE,  canMove(initialBoard, thisColour = RED, thisPoint = 6, roll = 4))
 })
 
+
 test_that("valid can moves", {
 
   initialBoard <- getStartingBoard()
@@ -39,6 +40,26 @@ test_that("valid can moves", {
 
 })
 
+test_that("valid can moves from bar - red", {
+
+  initial_board <- getStartingBoard()
+
+  bar_board <- initial_board %>%
+    mutate(
+      numCheckers = if_else(point == 24, 1, numCheckers)
+    ) %>%
+    mutate(
+      numCheckers = if_else(point == RED_BAR, 1, numCheckers)
+    )
+
+  expect_equal(TRUE, canMoveFromBar(bar_board, RED, 1))
+  expect_equal(TRUE, canMoveFromBar(bar_board, RED, 2))
+  expect_equal(TRUE, canMoveFromBar(bar_board, RED, 3))
+  expect_equal(TRUE, canMoveFromBar(bar_board, RED, 4))
+  expect_equal(TRUE, canMoveFromBar(bar_board, RED, 5))
+  expect_equal(FALSE, canMoveFromBar(bar_board, RED, 6))
+
+})
 
 test_that("valid moves from bar", {
 
@@ -147,4 +168,5 @@ test_that("valid moves from board", {
   expect_equal(newPoint$colour, WHITE)
 
 })
+
 

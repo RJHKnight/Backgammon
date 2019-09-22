@@ -2,10 +2,13 @@
 
 * Doubles
 * Available moves when checkers on bar
-* Handle moves with no available moves (move single checker)
+* Handle moves with no available full moves (move single checker)
+* Handle case of only being able to move 1 checker off the bar (when multiple on bar)
 * Remove duplicate end states
+* Do I need canMove and doMove? Should doMove just throw error if invalid?
 
 --- Tests ---
+
 * Valid moves
 * Valid with double
 * Valid with checker on board
