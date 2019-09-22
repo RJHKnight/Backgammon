@@ -1,0 +1,11 @@
+--- Features ---
+
+* Doubles
+* Available moves when checkers on bar
+* Handle moves with no available moves (move single checker)
+* Remove duplicate end states
+
+--- Tests ---
+* Valid moves
+* Valid with double
+* Valid with checker on board
